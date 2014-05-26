@@ -1,0 +1,28 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [1][-]{section.2}{Advantages of Mobile}{}
+\BOOKMARK [1][-]{section.3}{Sensor Communications}{}
+\BOOKMARK [2][-]{subsection.3.1}{IEEE 802.15.4}{section.3}
+\BOOKMARK [2][-]{subsection.3.2}{Bluetooth}{section.3}
+\BOOKMARK [2][-]{subsection.3.3}{Bluetooth Low Energy Technology}{section.3}
+\BOOKMARK [2][-]{subsection.3.4}{Wi-Fi}{section.3}
+\BOOKMARK [1][-]{section.4}{Platforms for Mobile Development}{}
+\BOOKMARK [2][-]{subsection.4.1}{Java Micro Edition}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Android}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Symbian}{section.4}
+\BOOKMARK [2][-]{subsection.4.4}{iPhone}{section.4}
+\BOOKMARK [2][-]{subsection.4.5}{BlackBerry}{section.4}
+\BOOKMARK [1][-]{section.5}{information architecture for sensor data}{}
+\BOOKMARK [2][-]{subsection.5.1}{General Overview}{section.5}
+\BOOKMARK [2][-]{subsection.5.2}{ByteSources}{section.5}
+\BOOKMARK [2][-]{subsection.5.3}{MessageVerifier}{section.5}
+\BOOKMARK [2][-]{subsection.5.4}{SensorHeader}{section.5}
+\BOOKMARK [2][-]{subsection.5.5}{SensorMessage}{section.5}
+\BOOKMARK [2][-]{subsection.5.6}{SensorRecords}{section.5}
+\BOOKMARK [2][-]{subsection.5.7}{The DataStore}{section.5}
+\BOOKMARK [2][-]{subsection.5.8}{ConfigDB}{section.5}
+\BOOKMARK [2][-]{subsection.5.9}{SourceList}{section.5}
+\BOOKMARK [2][-]{subsection.5.10}{Agents}{section.5}
+\BOOKMARK [2][-]{subsection.5.11}{Graphical Interfaces}{section.5}
+\BOOKMARK [1][-]{section.6}{Trial Results}{}
+\BOOKMARK [1][-]{section.7}{Conclusions}{}
+\BOOKMARK [1][-]{section*.1}{References}{}

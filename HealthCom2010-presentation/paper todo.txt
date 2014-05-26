@@ -1,0 +1,5 @@
+What I think would be very interesting is if you could explain the way agents can observe the readings (plus an overview of potential agents as you see it now). Also interesting to show is that this setup would be applicable to any type of sensor reading.
+
+
+consider adding a manager agent that requests device info from the devices and ensures
+that the devices are continually available. 

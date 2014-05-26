@@ -1,0 +1,1273 @@
+/*
+ * VirtualFallSensorView.java
+ */
+package virtualFallSensor;
+
+import org.jdesktop.application.FrameView;
+import org.jdesktop.application.SingleFrameApplication;
+
+import fallHandler.datastore.DataStore;
+import fallHandler.datastore.MessageVerifier;
+
+
+/**
+ * The application's main frame.
+ */
+public class VirtualFallSensorView extends FrameView {
+
+    int[] msg;
+    MessageVerifier verifier = new MessageVerifier(null);
+
+    public VirtualFallSensorView(SingleFrameApplication app) {
+        super(app);
+
+        initComponents();
+
+    }
+
+    public int stringToInt(String input) {
+        Integer myInt = new Integer(input);
+
+        if (myInt.intValue() > 0 && myInt.intValue() < 256) {
+            return myInt.intValue();
+        }
+
+        return 0;
+    }
+
+    public void write(int[] input) {
+        
+            byte[] byteMsg = new byte[msg.length];
+            for (int i = 0; i < byteMsg.length; i++) {
+                byteMsg[i] = (byte) msg[i];
+                verifier.processByte(byteMsg[i]);
+            }
+
+            lastSent.setText(toHexString(byteMsg, true));
+
+        
+    }
+
+    private void constructmsg() {
+        if (stringToInt(headerLength.getText()) < 8) {
+            headerLength.setText("8");
+        }
+
+        msg = new int[stringToInt(headerLength.getText()) + 2];
+
+        msg[0] = 0xfc;
+        msg[1] = stringToInt(headerLength.getText());
+        msg[2] = stringToInt(headerType.getText());
+        msg[3] = stringToInt(headerDestination.getText());
+        msg[4] = stringToInt(headerSource.getText());
+
+        msg[6] = stringToInt(headerSeqHigh.getText());
+        msg[7] = stringToInt(headerSeqLow.getText());
+        msg[8] = stringToInt(headerChecksum.getText());
+        msg[9] = 0xfd;
+
+        int status = 0;
+
+        if (headerFallDetected.isSelected()) {
+            status |= 0x80;
+        }
+        if (headerSensorInUse.isSelected()) {
+            status |= 0x40;
+        }
+        if (headerBatteryLow.isSelected()) {
+            status |= 0x20;
+        }
+        if (headerCardFull.isSelected()) {
+            status |= 0x10;
+        }
+        if (headerSignalLow.isSelected()) {
+            status |= 0x08;
+        }
+        if (headerMessageMissed.isSelected()) {
+            status |= 0x04;
+        }
+        if (headerOnMainPower.isSelected()) {
+            status |= 0x02;
+        }
+        if (headerRequestTime.isSelected()) {
+            status |= 0x01;
+        }
+
+        msg[5] = status;
+    }
+
+    private void autofill() {
+
+        int high = stringToInt(headerSeqHigh.getText());
+        int low = stringToInt(headerSeqLow.getText());
+
+        if (low > 255) {
+            high++;
+            low = 0;
+        }
+        low++;
+
+        headerSeqHigh.setText(high + "");
+        headerSeqLow.setText(low + "");
+
+        setChecksum();
+    }
+
+    private void setChecksum() {
+
+
+        int chksum = 0;
+        msg[8] = 0;
+
+        for (int i = 1; i < msg.length - 1; i++) {
+            chksum ^= msg[i];
+        }
+        msg[8] = chksum;
+        headerChecksum.setText(chksum + "");
+    }
+
+    public static String toHexString(int[] byteArr, boolean isDelimited) {
+        byte[] newArray = new byte[byteArr.length];
+
+        for (int i = 0; i < newArray.length; i++) {
+            newArray[i] = (byte) byteArr[i];
+        }
+
+        return toHexString(newArray, isDelimited);
+    }
+
+    public static String toHexString(byte[] byteArr, boolean isDelimited) {
+        final String hexChrs = new String("0123456789abcdef");
+        final int markerChrs = (isDelimited ? 2 : 0);
+        final boolean dataAlso = (byteArr.length >
+                2);
+        final int startOfData = 8 + (2 / 2) - 1;
+        StringBuffer hexStr = new StringBuffer(byteArr.length * 3 + markerChrs);
+
+        for (int i = 0; i < byteArr.length; i++) {
+            hexStr.append(hexChrs.charAt((byteArr[i] & 0xf0) >>> 4));
+            hexStr.append(hexChrs.charAt(byteArr[i] & 0x0f));
+
+            // Insert some character delimiters to improve readability
+            if (i == 0 && isDelimited) {
+                hexStr.append('[');
+            } else if (i == byteArr.length - 2 && isDelimited) {
+                hexStr.append(']');
+            } else if (dataAlso && i == startOfData) {
+                hexStr.append("--");
+            } else {
+                hexStr.append(' ');
+            }
+        }
+        return hexStr.toString();
+    }
+
+    private void send() {
+        if (headerAlwaysAutoFill.isSelected()) {
+            setChecksum();
+        }
+
+        write(msg);
+
+        if (headerAlwaysAutoFill.isSelected()) {
+            autofill();
+        }
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        mainPanel = new javax.swing.JPanel();
+        MainPanel = new javax.swing.JTabbedPane();
+        HeaderPane = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        headerFallDetected = new javax.swing.JCheckBox();
+        headerSensorInUse = new javax.swing.JCheckBox();
+        headerBatteryLow = new javax.swing.JCheckBox();
+        headerCardFull = new javax.swing.JCheckBox();
+        headerSignalLow = new javax.swing.JCheckBox();
+        headerMessageMissed = new javax.swing.JCheckBox();
+        headerOnMainPower = new javax.swing.JCheckBox();
+        headerRequestTime = new javax.swing.JCheckBox();
+        headerLength = new javax.swing.JTextField();
+        headerType = new javax.swing.JTextField();
+        headerDestination = new javax.swing.JTextField();
+        headerSource = new javax.swing.JTextField();
+        headerTypeSelector = new javax.swing.JComboBox();
+        headerSeqHigh = new javax.swing.JTextField();
+        headerSeqLow = new javax.swing.JTextField();
+        headerChecksum = new javax.swing.JTextField();
+        headerSend = new javax.swing.JButton();
+        headerAutoFill = new javax.swing.JButton();
+        headerAlwaysAutoFill = new javax.swing.JCheckBox();
+        CasualPane = new javax.swing.JPanel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        casualState = new javax.swing.JTextField();
+        casualCadence = new javax.swing.JTextField();
+        casualSteps = new javax.swing.JTextField();
+        casualStateSelector = new javax.swing.JComboBox();
+        casualSend = new javax.swing.JButton();
+        MobilityPane = new javax.swing.JPanel();
+        jLabel14 = new javax.swing.JLabel();
+        mobilityCadence = new javax.swing.JTextField();
+        mobilitySteps = new javax.swing.JTextField();
+        jLabel15 = new javax.swing.JLabel();
+        mobilityGaitPhase = new javax.swing.JTextField();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        mobilitySupport = new javax.swing.JTextField();
+        jLabel18 = new javax.swing.JLabel();
+        mobilitySwingPhase = new javax.swing.JTextField();
+        mobilityStancePhase = new javax.swing.JTextField();
+        jLabel19 = new javax.swing.JLabel();
+        mobilityDoubleSupport = new javax.swing.JTextField();
+        jLabel20 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+        mobilityStepLength = new javax.swing.JTextField();
+        mobilityGaitPhaseSelector = new javax.swing.JComboBox();
+        mobilitySupportSelector = new javax.swing.JComboBox();
+        mobilitySend = new javax.swing.JButton();
+        FallPane = new javax.swing.JPanel();
+        jLabel22 = new javax.swing.JLabel();
+        fallFallType = new javax.swing.JTextField();
+        fallFallTypeSelector = new javax.swing.JComboBox();
+        fallSend = new javax.swing.JButton();
+        FallAckPane = new javax.swing.JPanel();
+        jLabel23 = new javax.swing.JLabel();
+        fallAckSeqHigh = new javax.swing.JTextField();
+        fallAckSeqLow = new javax.swing.JTextField();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel32 = new javax.swing.JLabel();
+        TimePane = new javax.swing.JPanel();
+        jLabel25 = new javax.swing.JLabel();
+        jLabel26 = new javax.swing.JLabel();
+        jLabel27 = new javax.swing.JLabel();
+        jLabel28 = new javax.swing.JLabel();
+        jLabel29 = new javax.swing.JLabel();
+        jLabel30 = new javax.swing.JLabel();
+        timeSecond = new javax.swing.JTextField();
+        timeMinute = new javax.swing.JTextField();
+        timeHour = new javax.swing.JTextField();
+        timeDay = new javax.swing.JTextField();
+        timeMonth = new javax.swing.JTextField();
+        timeYear = new javax.swing.JTextField();
+        jLabel33 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        lastSent = new javax.swing.JLabel();
+        lastReceived = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+
+        mainPanel.setName("mainPanel"); // NOI18N
+
+        MainPanel.setName("MainPanel"); // NOI18N
+
+        HeaderPane.setName("HeaderPane"); // NOI18N
+
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(virtualFallSensor.VirtualFallSensorApp.class).getContext().getResourceMap(VirtualFallSensorView.class);
+        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setName("jLabel3"); // NOI18N
+
+        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
+        jLabel4.setName("jLabel4"); // NOI18N
+
+        jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
+        jLabel5.setName("jLabel5"); // NOI18N
+
+        jLabel6.setText(resourceMap.getString("jLabel6.text")); // NOI18N
+        jLabel6.setName("jLabel6"); // NOI18N
+
+        jLabel7.setText(resourceMap.getString("jLabel7.text")); // NOI18N
+        jLabel7.setName("jLabel7"); // NOI18N
+
+        jLabel8.setText(resourceMap.getString("jLabel8.text")); // NOI18N
+        jLabel8.setName("jLabel8"); // NOI18N
+
+        jLabel9.setText(resourceMap.getString("jLabel9.text")); // NOI18N
+        jLabel9.setName("jLabel9"); // NOI18N
+
+        jLabel10.setText(resourceMap.getString("jLabel10.text")); // NOI18N
+        jLabel10.setName("jLabel10"); // NOI18N
+
+        headerFallDetected.setText(resourceMap.getString("headerFallDetected.text")); // NOI18N
+        headerFallDetected.setName("headerFallDetected"); // NOI18N
+
+        headerSensorInUse.setText(resourceMap.getString("headerSensorInUse.text")); // NOI18N
+        headerSensorInUse.setName("headerSensorInUse"); // NOI18N
+
+        headerBatteryLow.setText(resourceMap.getString("headerBatteryLow.text")); // NOI18N
+        headerBatteryLow.setName("headerBatteryLow"); // NOI18N
+
+        headerCardFull.setText(resourceMap.getString("headerCardFull.text")); // NOI18N
+        headerCardFull.setName("headerCardFull"); // NOI18N
+
+        headerSignalLow.setText(resourceMap.getString("headerSignalLow.text")); // NOI18N
+        headerSignalLow.setName("headerSignalLow"); // NOI18N
+
+        headerMessageMissed.setText(resourceMap.getString("headerMessageMissed.text")); // NOI18N
+        headerMessageMissed.setName("headerMessageMissed"); // NOI18N
+
+        headerOnMainPower.setText(resourceMap.getString("headerOnMainPower.text")); // NOI18N
+        headerOnMainPower.setName("headerOnMainPower"); // NOI18N
+
+        headerRequestTime.setText(resourceMap.getString("headerRequestTime.text")); // NOI18N
+        headerRequestTime.setName("headerRequestTime"); // NOI18N
+
+        headerLength.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        headerLength.setText(resourceMap.getString("headerLength.text")); // NOI18N
+        headerLength.setName("headerLength"); // NOI18N
+
+        headerType.setText(resourceMap.getString("headerType.text")); // NOI18N
+        headerType.setName("headerType"); // NOI18N
+
+        headerDestination.setText(resourceMap.getString("headerDestination.text")); // NOI18N
+        headerDestination.setName("headerDestination"); // NOI18N
+
+        headerSource.setText(resourceMap.getString("headerSource.text")); // NOI18N
+        headerSource.setName("headerSource"); // NOI18N
+
+        headerTypeSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Header", "Casual", "Mobility", "Fall" }));
+        headerTypeSelector.setName("headerTypeSelector"); // NOI18N
+        headerTypeSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                headerTypeSelectorActionPerformed(evt);
+            }
+        });
+
+        headerSeqHigh.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        headerSeqHigh.setText(resourceMap.getString("headerSeqHigh.text")); // NOI18N
+        headerSeqHigh.setName("headerSeqHigh"); // NOI18N
+
+        headerSeqLow.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        headerSeqLow.setText(resourceMap.getString("headerSeqLow.text")); // NOI18N
+        headerSeqLow.setName("headerSeqLow"); // NOI18N
+
+        headerChecksum.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        headerChecksum.setText(resourceMap.getString("headerChecksum.text")); // NOI18N
+        headerChecksum.setName("headerChecksum"); // NOI18N
+
+        headerSend.setText(resourceMap.getString("headerSend.text")); // NOI18N
+        headerSend.setName("headerSend"); // NOI18N
+        headerSend.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                headerSendActionPerformed(evt);
+            }
+        });
+
+        headerAutoFill.setText(resourceMap.getString("headerAutoFill.text")); // NOI18N
+        headerAutoFill.setName("headerAutoFill"); // NOI18N
+        headerAutoFill.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                headerAutoFillActionPerformed(evt);
+            }
+        });
+
+        headerAlwaysAutoFill.setSelected(true);
+        headerAlwaysAutoFill.setText(resourceMap.getString("headerAlwaysAutoFill.text")); // NOI18N
+        headerAlwaysAutoFill.setName("headerAlwaysAutoFill"); // NOI18N
+
+        javax.swing.GroupLayout HeaderPaneLayout = new javax.swing.GroupLayout(HeaderPane);
+        HeaderPane.setLayout(HeaderPaneLayout);
+        HeaderPaneLayout.setHorizontalGroup(
+            HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(HeaderPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel9)
+                    .addComponent(jLabel10)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(HeaderPaneLayout.createSequentialGroup()
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(headerChecksum, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(headerSeqLow, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(headerSeqHigh, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(HeaderPaneLayout.createSequentialGroup()
+                                .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(headerSource, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(headerDestination, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(headerType, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(headerLength, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(1, 1, 1)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(headerSend)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, HeaderPaneLayout.createSequentialGroup()
+                                .addComponent(headerTypeSelector, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(202, 202, 202)
+                                .addComponent(headerAlwaysAutoFill))))
+                    .addGroup(HeaderPaneLayout.createSequentialGroup()
+                        .addGap(19, 19, 19)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(headerSignalLow)
+                            .addComponent(headerFallDetected))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(headerSensorInUse)
+                            .addComponent(headerMessageMissed))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(headerOnMainPower)
+                            .addComponent(headerBatteryLow))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(headerCardFull)
+                            .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(headerRequestTime)
+                                .addComponent(headerAutoFill)))))
+                .addContainerGap())
+        );
+        HeaderPaneLayout.setVerticalGroup(
+            HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(HeaderPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(HeaderPaneLayout.createSequentialGroup()
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerLength, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(headerTypeSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerDestination, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6)))
+                    .addGroup(HeaderPaneLayout.createSequentialGroup()
+                        .addComponent(headerAutoFill)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(headerAlwaysAutoFill)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(HeaderPaneLayout.createSequentialGroup()
+                        .addComponent(jLabel7)
+                        .addGap(30, 30, 30))
+                    .addGroup(HeaderPaneLayout.createSequentialGroup()
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerSensorInUse)
+                            .addComponent(headerBatteryLow)
+                            .addComponent(headerCardFull)
+                            .addComponent(headerFallDetected))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerOnMainPower)
+                            .addComponent(headerRequestTime)
+                            .addComponent(headerSignalLow)
+                            .addComponent(headerMessageMissed))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(HeaderPaneLayout.createSequentialGroup()
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerSeqHigh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel8))
+                        .addGap(6, 6, 6)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerSeqLow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel9))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(HeaderPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerChecksum, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel10))
+                        .addGap(25, 25, 25))
+                    .addGroup(HeaderPaneLayout.createSequentialGroup()
+                        .addComponent(headerSend)
+                        .addContainerGap())))
+        );
+
+        HeaderPaneLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {headerBatteryLow, headerCardFull, headerFallDetected, headerMessageMissed, headerOnMainPower, headerRequestTime, headerSensorInUse, headerSignalLow});
+
+        MainPanel.addTab(resourceMap.getString("HeaderPane.TabConstraints.tabTitle"), HeaderPane); // NOI18N
+
+        CasualPane.setName("CasualPane"); // NOI18N
+
+        jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
+        jLabel11.setName("jLabel11"); // NOI18N
+
+        jLabel12.setText(resourceMap.getString("jLabel12.text")); // NOI18N
+        jLabel12.setName("jLabel12"); // NOI18N
+
+        jLabel13.setText(resourceMap.getString("jLabel13.text")); // NOI18N
+        jLabel13.setName("jLabel13"); // NOI18N
+
+        casualState.setText(resourceMap.getString("casualState.text")); // NOI18N
+        casualState.setName("casualState"); // NOI18N
+
+        casualCadence.setText(resourceMap.getString("casualCadence.text")); // NOI18N
+        casualCadence.setName("casualCadence"); // NOI18N
+
+        casualSteps.setText(resourceMap.getString("casualSteps.text")); // NOI18N
+        casualSteps.setName("casualSteps"); // NOI18N
+
+        casualStateSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Running", "Walking", "Standing", "Sitting", "Lying", "Fall" }));
+        casualStateSelector.setName("casualStateSelector"); // NOI18N
+        casualStateSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                casualStateSelectorActionPerformed(evt);
+            }
+        });
+
+        casualSend.setText(resourceMap.getString("casualSend.text")); // NOI18N
+        casualSend.setName("casualSend"); // NOI18N
+        casualSend.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                casualSendActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout CasualPaneLayout = new javax.swing.GroupLayout(CasualPane);
+        CasualPane.setLayout(CasualPaneLayout);
+        CasualPaneLayout.setHorizontalGroup(
+            CasualPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(CasualPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(CasualPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel11)
+                    .addComponent(jLabel13)
+                    .addComponent(jLabel12))
+                .addGap(14, 14, 14)
+                .addGroup(CasualPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(casualSteps)
+                    .addComponent(casualCadence, 0, 0, Short.MAX_VALUE)
+                    .addComponent(casualState, javax.swing.GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(casualStateSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, CasualPaneLayout.createSequentialGroup()
+                .addContainerGap(610, Short.MAX_VALUE)
+                .addComponent(casualSend)
+                .addContainerGap())
+        );
+        CasualPaneLayout.setVerticalGroup(
+            CasualPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(CasualPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(CasualPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(casualState, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel11)
+                    .addComponent(casualStateSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(CasualPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(casualCadence, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(7, 7, 7)
+                .addGroup(CasualPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(casualSteps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel13))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 197, Short.MAX_VALUE)
+                .addComponent(casualSend)
+                .addContainerGap())
+        );
+
+        MainPanel.addTab(resourceMap.getString("CasualPane.TabConstraints.tabTitle"), CasualPane); // NOI18N
+
+        MobilityPane.setName("MobilityPane"); // NOI18N
+
+        jLabel14.setText(resourceMap.getString("jLabel14.text")); // NOI18N
+        jLabel14.setName("jLabel14"); // NOI18N
+
+        mobilityCadence.setText(resourceMap.getString("mobilityCadence.text")); // NOI18N
+        mobilityCadence.setName("mobilityCadence"); // NOI18N
+
+        mobilitySteps.setText(resourceMap.getString("mobilitySteps.text")); // NOI18N
+        mobilitySteps.setName("mobilitySteps"); // NOI18N
+
+        jLabel15.setText(resourceMap.getString("jLabel15.text")); // NOI18N
+        jLabel15.setName("jLabel15"); // NOI18N
+
+        mobilityGaitPhase.setText(resourceMap.getString("mobilityGaitPhase.text")); // NOI18N
+        mobilityGaitPhase.setName("mobilityGaitPhase"); // NOI18N
+
+        jLabel16.setText(resourceMap.getString("jLabel16.text")); // NOI18N
+        jLabel16.setName("jLabel16"); // NOI18N
+
+        jLabel17.setText(resourceMap.getString("jLabel17.text")); // NOI18N
+        jLabel17.setName("jLabel17"); // NOI18N
+
+        mobilitySupport.setText(resourceMap.getString("mobilitySupport.text")); // NOI18N
+        mobilitySupport.setName("mobilitySupport"); // NOI18N
+
+        jLabel18.setText(resourceMap.getString("jLabel18.text")); // NOI18N
+        jLabel18.setName("jLabel18"); // NOI18N
+
+        mobilitySwingPhase.setText(resourceMap.getString("mobilitySwingPhase.text")); // NOI18N
+        mobilitySwingPhase.setName("mobilitySwingPhase"); // NOI18N
+
+        mobilityStancePhase.setText(resourceMap.getString("mobilityStancePhase.text")); // NOI18N
+        mobilityStancePhase.setName("mobilityStancePhase"); // NOI18N
+
+        jLabel19.setText(resourceMap.getString("jLabel19.text")); // NOI18N
+        jLabel19.setName("jLabel19"); // NOI18N
+
+        mobilityDoubleSupport.setText(resourceMap.getString("mobilityDoubleSupport.text")); // NOI18N
+        mobilityDoubleSupport.setName("mobilityDoubleSupport"); // NOI18N
+
+        jLabel20.setText(resourceMap.getString("jLabel20.text")); // NOI18N
+        jLabel20.setName("jLabel20"); // NOI18N
+
+        jLabel21.setText(resourceMap.getString("jLabel21.text")); // NOI18N
+        jLabel21.setName("jLabel21"); // NOI18N
+
+        mobilityStepLength.setText(resourceMap.getString("mobilityStepLength.text")); // NOI18N
+        mobilityStepLength.setName("mobilityStepLength"); // NOI18N
+
+        mobilityGaitPhaseSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Swing Phase", "Stance Phase" }));
+        mobilityGaitPhaseSelector.setName("mobilityGaitPhaseSelector"); // NOI18N
+        mobilityGaitPhaseSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mobilityGaitPhaseSelectorActionPerformed(evt);
+            }
+        });
+
+        mobilitySupportSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Single Limb", "Double Limb", "Sitting", "None" }));
+        mobilitySupportSelector.setName("mobilitySupportSelector"); // NOI18N
+        mobilitySupportSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mobilitySupportSelectorActionPerformed(evt);
+            }
+        });
+
+        mobilitySend.setText(resourceMap.getString("mobilitySend.text")); // NOI18N
+        mobilitySend.setName("mobilitySend"); // NOI18N
+        mobilitySend.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mobilitySendActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout MobilityPaneLayout = new javax.swing.GroupLayout(MobilityPane);
+        MobilityPane.setLayout(MobilityPaneLayout);
+        MobilityPaneLayout.setHorizontalGroup(
+            MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(MobilityPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(MobilityPaneLayout.createSequentialGroup()
+                        .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(MobilityPaneLayout.createSequentialGroup()
+                                .addComponent(jLabel14)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(mobilityCadence, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, MobilityPaneLayout.createSequentialGroup()
+                                .addComponent(jLabel15)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(mobilitySteps, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(MobilityPaneLayout.createSequentialGroup()
+                                .addComponent(jLabel16)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(mobilityGaitPhase, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(MobilityPaneLayout.createSequentialGroup()
+                                .addComponent(jLabel17)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(mobilitySupport, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(MobilityPaneLayout.createSequentialGroup()
+                                .addComponent(jLabel18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(mobilitySwingPhase, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, MobilityPaneLayout.createSequentialGroup()
+                                .addComponent(jLabel19)
+                                .addGap(18, 18, 18)
+                                .addComponent(mobilityStancePhase, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(6, 6, 6)
+                        .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(mobilitySupportSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(mobilityGaitPhaseSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(MobilityPaneLayout.createSequentialGroup()
+                            .addComponent(jLabel21)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(mobilityStepLength, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, MobilityPaneLayout.createSequentialGroup()
+                            .addComponent(jLabel20)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(mobilityDoubleSupport, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(349, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, MobilityPaneLayout.createSequentialGroup()
+                .addContainerGap(610, Short.MAX_VALUE)
+                .addComponent(mobilitySend)
+                .addContainerGap())
+        );
+        MobilityPaneLayout.setVerticalGroup(
+            MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(MobilityPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel14)
+                    .addComponent(mobilityCadence, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel15)
+                    .addComponent(mobilitySteps, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel16)
+                    .addComponent(mobilityGaitPhase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mobilityGaitPhaseSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel17)
+                    .addComponent(mobilitySupport, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mobilitySupportSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel18)
+                    .addComponent(mobilitySwingPhase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel19)
+                    .addComponent(mobilityStancePhase, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel20)
+                    .addComponent(mobilityDoubleSupport, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(MobilityPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel21)
+                    .addComponent(mobilityStepLength, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                .addComponent(mobilitySend)
+                .addContainerGap())
+        );
+
+        MainPanel.addTab(resourceMap.getString("MobilityPane.TabConstraints.tabTitle"), MobilityPane); // NOI18N
+
+        FallPane.setName("FallPane"); // NOI18N
+
+        jLabel22.setText(resourceMap.getString("jLabel22.text")); // NOI18N
+        jLabel22.setName("jLabel22"); // NOI18N
+
+        fallFallType.setText(resourceMap.getString("fallFallType.text")); // NOI18N
+        fallFallType.setName("fallFallType"); // NOI18N
+
+        fallFallTypeSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Generic", "Sliding" }));
+        fallFallTypeSelector.setName("fallFallTypeSelector"); // NOI18N
+        fallFallTypeSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fallFallTypeSelectorActionPerformed(evt);
+            }
+        });
+
+        fallSend.setText(resourceMap.getString("fallSend.text")); // NOI18N
+        fallSend.setName("fallSend"); // NOI18N
+        fallSend.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fallSendActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout FallPaneLayout = new javax.swing.GroupLayout(FallPane);
+        FallPane.setLayout(FallPaneLayout);
+        FallPaneLayout.setHorizontalGroup(
+            FallPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(FallPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel22)
+                .addGap(18, 18, 18)
+                .addComponent(fallFallType, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fallFallTypeSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(458, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, FallPaneLayout.createSequentialGroup()
+                .addContainerGap(610, Short.MAX_VALUE)
+                .addComponent(fallSend)
+                .addContainerGap())
+        );
+        FallPaneLayout.setVerticalGroup(
+            FallPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(FallPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(FallPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel22)
+                    .addComponent(fallFallType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fallFallTypeSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 264, Short.MAX_VALUE)
+                .addComponent(fallSend)
+                .addContainerGap())
+        );
+
+        MainPanel.addTab(resourceMap.getString("FallPane.TabConstraints.tabTitle"), FallPane); // NOI18N
+
+        FallAckPane.setName("FallAckPane"); // NOI18N
+
+        jLabel23.setText(resourceMap.getString("jLabel23.text")); // NOI18N
+        jLabel23.setName("jLabel23"); // NOI18N
+
+        fallAckSeqHigh.setText(resourceMap.getString("fallAckSeqHigh.text")); // NOI18N
+        fallAckSeqHigh.setName("fallAckSeqHigh"); // NOI18N
+
+        fallAckSeqLow.setText(resourceMap.getString("fallAckSeqLow.text")); // NOI18N
+        fallAckSeqLow.setName("fallAckSeqLow"); // NOI18N
+
+        jLabel24.setText(resourceMap.getString("jLabel24.text")); // NOI18N
+        jLabel24.setName("jLabel24"); // NOI18N
+
+        jLabel32.setText(resourceMap.getString("jLabel32.text")); // NOI18N
+        jLabel32.setName("jLabel32"); // NOI18N
+
+        javax.swing.GroupLayout FallAckPaneLayout = new javax.swing.GroupLayout(FallAckPane);
+        FallAckPane.setLayout(FallAckPaneLayout);
+        FallAckPaneLayout.setHorizontalGroup(
+            FallAckPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(FallAckPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(FallAckPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(FallAckPaneLayout.createSequentialGroup()
+                        .addGroup(FallAckPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel23)
+                            .addComponent(jLabel24))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(FallAckPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(fallAckSeqLow)
+                            .addComponent(fallAckSeqHigh, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)))
+                    .addComponent(jLabel32))
+                .addContainerGap(392, Short.MAX_VALUE))
+        );
+        FallAckPaneLayout.setVerticalGroup(
+            FallAckPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(FallAckPaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(FallAckPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel23)
+                    .addComponent(fallAckSeqHigh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(FallAckPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fallAckSeqLow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel24))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 237, Short.MAX_VALUE)
+                .addComponent(jLabel32)
+                .addContainerGap())
+        );
+
+        MainPanel.addTab(resourceMap.getString("FallAckPane.TabConstraints.tabTitle"), FallAckPane); // NOI18N
+
+        TimePane.setName("TimePane"); // NOI18N
+
+        jLabel25.setText(resourceMap.getString("jLabel25.text")); // NOI18N
+        jLabel25.setName("jLabel25"); // NOI18N
+
+        jLabel26.setText(resourceMap.getString("jLabel26.text")); // NOI18N
+        jLabel26.setName("jLabel26"); // NOI18N
+
+        jLabel27.setText(resourceMap.getString("jLabel27.text")); // NOI18N
+        jLabel27.setName("jLabel27"); // NOI18N
+
+        jLabel28.setText(resourceMap.getString("jLabel28.text")); // NOI18N
+        jLabel28.setName("jLabel28"); // NOI18N
+
+        jLabel29.setText(resourceMap.getString("jLabel29.text")); // NOI18N
+        jLabel29.setName("jLabel29"); // NOI18N
+
+        jLabel30.setText(resourceMap.getString("jLabel30.text")); // NOI18N
+        jLabel30.setName("jLabel30"); // NOI18N
+
+        timeSecond.setText(resourceMap.getString("timeSecond.text")); // NOI18N
+        timeSecond.setName("timeSecond"); // NOI18N
+
+        timeMinute.setText(resourceMap.getString("timeMinute.text")); // NOI18N
+        timeMinute.setName("timeMinute"); // NOI18N
+
+        timeHour.setText(resourceMap.getString("timeHour.text")); // NOI18N
+        timeHour.setName("timeHour"); // NOI18N
+
+        timeDay.setText(resourceMap.getString("timeDay.text")); // NOI18N
+        timeDay.setName("timeDay"); // NOI18N
+
+        timeMonth.setText(resourceMap.getString("timeMonth.text")); // NOI18N
+        timeMonth.setName("timeMonth"); // NOI18N
+
+        timeYear.setText(resourceMap.getString("timeYear.text")); // NOI18N
+        timeYear.setName("timeYear"); // NOI18N
+
+        jLabel33.setText(resourceMap.getString("jLabel33.text")); // NOI18N
+        jLabel33.setName("jLabel33"); // NOI18N
+
+        javax.swing.GroupLayout TimePaneLayout = new javax.swing.GroupLayout(TimePane);
+        TimePane.setLayout(TimePaneLayout);
+        TimePaneLayout.setHorizontalGroup(
+            TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(TimePaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(TimePaneLayout.createSequentialGroup()
+                        .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel30)
+                            .addComponent(jLabel25)
+                            .addComponent(jLabel26)
+                            .addComponent(jLabel27)
+                            .addComponent(jLabel28)
+                            .addComponent(jLabel29))
+                        .addGap(14, 14, 14)
+                        .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(timeMinute, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(timeSecond, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(timeHour, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(timeDay, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(timeMonth, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(timeYear, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel33))
+                .addContainerGap(392, Short.MAX_VALUE))
+        );
+        TimePaneLayout.setVerticalGroup(
+            TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(TimePaneLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel25)
+                    .addComponent(timeYear, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(11, 11, 11)
+                .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel26)
+                    .addComponent(timeMonth, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(11, 11, 11)
+                .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel27)
+                    .addComponent(timeDay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(11, 11, 11)
+                .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel28)
+                    .addComponent(timeHour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel29)
+                    .addComponent(timeMinute, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(TimePaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel30)
+                    .addComponent(timeSecond, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 84, Short.MAX_VALUE)
+                .addComponent(jLabel33)
+                .addContainerGap())
+        );
+
+        MainPanel.addTab(resourceMap.getString("TimePane.TabConstraints.tabTitle"), TimePane); // NOI18N
+
+        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel1.setName("jLabel1"); // NOI18N
+
+        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
+        jLabel2.setName("jLabel2"); // NOI18N
+
+        lastSent.setText(resourceMap.getString("lastSent.text")); // NOI18N
+        lastSent.setName("lastSent"); // NOI18N
+
+        lastReceived.setText(resourceMap.getString("lastReceived.text")); // NOI18N
+        lastReceived.setName("lastReceived"); // NOI18N
+
+        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton1.setName("jButton1"); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel1))
+                        .addGap(10, 10, 10)
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lastSent)
+                            .addComponent(lastReceived))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 400, Short.MAX_VALUE)
+                        .addComponent(jButton1)
+                        .addGap(10, 10, 10))
+                    .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 675, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainPanelLayout.createSequentialGroup()
+                .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
+                .addGap(53, 53, 53)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(lastReceived))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(lastSent)))
+                    .addComponent(jButton1))
+                .addContainerGap())
+        );
+
+        setComponent(mainPanel);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void headerSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headerSendActionPerformed
+
+        constructmsg();
+        send();
+
+
+    }//GEN-LAST:event_headerSendActionPerformed
+
+    private void headerAutoFillActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headerAutoFillActionPerformed
+        constructmsg();
+        autofill();
+    }//GEN-LAST:event_headerAutoFillActionPerformed
+
+    private void headerTypeSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headerTypeSelectorActionPerformed
+
+        switch (headerTypeSelector.getSelectedIndex()) {
+            case 0:
+                headerType.setText("0");
+                break;
+            case 1:
+                headerType.setText("1");
+                break;
+            case 2:
+                headerType.setText("2");
+                break;
+            case 3:
+                headerType.setText("3");
+                break;
+            case 4:
+                headerType.setText(0xa0 + "");
+                break;
+            case 5:
+                headerType.setText(0xa1 + "");
+                break;
+
+        }
+
+    }//GEN-LAST:event_headerTypeSelectorActionPerformed
+
+    private void casualStateSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_casualStateSelectorActionPerformed
+        switch (casualStateSelector.getSelectedIndex()) {
+            case 0:
+                casualState.setText("0");
+                break;
+            case 1:
+                casualState.setText("1");
+                break;
+            case 2:
+                casualState.setText("2");
+                break;
+            case 3:
+                casualState.setText("3");
+                break;
+            case 4:
+                casualState.setText("4");
+                break;
+            case 5:
+                casualState.setText("5");
+                break;
+
+        }
+    }//GEN-LAST:event_casualStateSelectorActionPerformed
+
+    private void casualSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_casualSendActionPerformed
+        headerLength.setText("11");
+        headerType.setText("1");
+        headerTypeSelector.setSelectedIndex(1);
+        constructmsg();
+        msg[9] = stringToInt(casualState.getText());
+        msg[10] = stringToInt(casualCadence.getText());
+        msg[11] = stringToInt(casualSteps.getText());
+        msg[12] = 0xfd;
+        send();
+    }//GEN-LAST:event_casualSendActionPerformed
+
+    private void fallFallTypeSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fallFallTypeSelectorActionPerformed
+        switch (fallFallTypeSelector.getSelectedIndex()) {
+            case 0:
+                fallFallType.setText("0");
+                break;
+            case 1:
+                fallFallType.setText("1");
+                break;
+        }
+
+    }//GEN-LAST:event_fallFallTypeSelectorActionPerformed
+
+    private void fallSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fallSendActionPerformed
+        headerLength.setText("9");
+        headerType.setText("3");
+        headerTypeSelector.setSelectedIndex(3);
+        constructmsg();
+        msg[9] = stringToInt(fallFallType.getText());
+        msg[10] = 0xfd;
+        send();
+    }//GEN-LAST:event_fallSendActionPerformed
+
+    private void mobilityGaitPhaseSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mobilityGaitPhaseSelectorActionPerformed
+        switch (mobilityGaitPhaseSelector.getSelectedIndex()) {
+            case 0:
+                mobilityGaitPhase.setText("0");
+                break;
+            case 1:
+                mobilityGaitPhase.setText("1");
+                break;
+        }
+    }//GEN-LAST:event_mobilityGaitPhaseSelectorActionPerformed
+
+    private void mobilitySupportSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mobilitySupportSelectorActionPerformed
+        switch (mobilitySupportSelector.getSelectedIndex()) {
+            case 0:
+                mobilitySupport.setText("0");
+                break;
+            case 1:
+                mobilitySupport.setText("1");
+                break;
+            case 2:
+                mobilitySupport.setText("2");
+                break;
+            case 3:
+                mobilitySupport.setText("3");
+                break;
+        }
+    }//GEN-LAST:event_mobilitySupportSelectorActionPerformed
+
+    private void mobilitySendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mobilitySendActionPerformed
+        headerLength.setText("16");
+        headerType.setText("2");
+        headerTypeSelector.setSelectedIndex(2);
+        constructmsg();
+        msg[9] = stringToInt(mobilityCadence.getText());
+        msg[10] = stringToInt(mobilitySteps.getText());
+        msg[11] = stringToInt(mobilityGaitPhase.getText());
+        msg[12] = stringToInt(mobilitySupport.getText());
+        msg[13] = stringToInt(mobilitySwingPhase.getText());
+        msg[14] = stringToInt(mobilityStancePhase.getText());
+        msg[15] = stringToInt(mobilityDoubleSupport.getText());
+        msg[16] = stringToInt(mobilityStepLength.getText());
+        msg[17] = 0xfd;
+        send();
+    }//GEN-LAST:event_mobilitySendActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+
+        System.out.println();
+        System.out.println(DataStore.getEntries());
+        System.out.println();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel CasualPane;
+    private javax.swing.JPanel FallAckPane;
+    private javax.swing.JPanel FallPane;
+    private javax.swing.JPanel HeaderPane;
+    private javax.swing.JTabbedPane MainPanel;
+    private javax.swing.JPanel MobilityPane;
+    private javax.swing.JPanel TimePane;
+    private javax.swing.JTextField casualCadence;
+    private javax.swing.JButton casualSend;
+    private javax.swing.JTextField casualState;
+    private javax.swing.JComboBox casualStateSelector;
+    private javax.swing.JTextField casualSteps;
+    private javax.swing.JTextField fallAckSeqHigh;
+    private javax.swing.JTextField fallAckSeqLow;
+    private javax.swing.JTextField fallFallType;
+    private javax.swing.JComboBox fallFallTypeSelector;
+    private javax.swing.JButton fallSend;
+    private javax.swing.JCheckBox headerAlwaysAutoFill;
+    private javax.swing.JButton headerAutoFill;
+    private javax.swing.JCheckBox headerBatteryLow;
+    private javax.swing.JCheckBox headerCardFull;
+    private javax.swing.JTextField headerChecksum;
+    private javax.swing.JTextField headerDestination;
+    private javax.swing.JCheckBox headerFallDetected;
+    private javax.swing.JTextField headerLength;
+    private javax.swing.JCheckBox headerMessageMissed;
+    private javax.swing.JCheckBox headerOnMainPower;
+    private javax.swing.JCheckBox headerRequestTime;
+    private javax.swing.JButton headerSend;
+    private javax.swing.JCheckBox headerSensorInUse;
+    private javax.swing.JTextField headerSeqHigh;
+    private javax.swing.JTextField headerSeqLow;
+    private javax.swing.JCheckBox headerSignalLow;
+    private javax.swing.JTextField headerSource;
+    private javax.swing.JTextField headerType;
+    private javax.swing.JComboBox headerTypeSelector;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel30;
+    private javax.swing.JLabel jLabel32;
+    private javax.swing.JLabel jLabel33;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    public javax.swing.JLabel lastReceived;
+    private javax.swing.JLabel lastSent;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JTextField mobilityCadence;
+    private javax.swing.JTextField mobilityDoubleSupport;
+    private javax.swing.JTextField mobilityGaitPhase;
+    private javax.swing.JComboBox mobilityGaitPhaseSelector;
+    private javax.swing.JButton mobilitySend;
+    private javax.swing.JTextField mobilityStancePhase;
+    private javax.swing.JTextField mobilityStepLength;
+    private javax.swing.JTextField mobilitySteps;
+    private javax.swing.JTextField mobilitySupport;
+    private javax.swing.JComboBox mobilitySupportSelector;
+    private javax.swing.JTextField mobilitySwingPhase;
+    private javax.swing.JTextField timeDay;
+    private javax.swing.JTextField timeHour;
+    private javax.swing.JTextField timeMinute;
+    private javax.swing.JTextField timeMonth;
+    private javax.swing.JTextField timeSecond;
+    private javax.swing.JTextField timeYear;
+    // End of variables declaration//GEN-END:variables
+}
