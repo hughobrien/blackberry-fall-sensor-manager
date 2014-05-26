@@ -13,4 +13,4 @@ The code was then adapted into a teaching tool for undergraduate software engine
 
 Demo
 ----
-![demonstration](https://raw.githubusercontent.com/hughobrien/blackberry-fall-sensor-manager/master/thirdparth/HealthCom2010/figures/storm-mod.png)
+![demonstration](https://raw.githubusercontent.com/hughobrien/blackberry-fall-sensor-manager/master/thirdparty/HealthCom2010/figures/storm-mod.png)
