@@ -85,7 +85,7 @@ package fallHandler.datastore;
 //	 */
 //	private void setDefaults() {
 //
-//		setValue(Records.options.numbertodial, "+353853133749");
+//		setValue(Records.options.numbertodial, "+353851234567");
 //		setValue(Records.options.loadfallhandler, "no");
 //		setValue(Records.options.loadfallalertacknowledger, "no");
 //	}
